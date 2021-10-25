@@ -1,14 +1,15 @@
 import * as cdk from '@aws-cdk/core';
 import * as ec2 from "@aws-cdk/aws-ec2";
 
-const MY_GLOBAL_IP = 'xxx.xxx.xxx.xxx/0'
+const MY_GLOBAL_IP = '/0'
 
 const PREFIX = 'my-app-';
 const VPC_ID = `${PREFIX}vpc`;
-const PUBLIC_SUBNET_FOR_ALB_ID = `${PREFIX}public-subnet-for-alb`;
-const PRIVATE_SUBNET_FOR_APP_ID = `${PREFIX}public-subnet-for-app`;
-const PRIVATE_SUBNET_FOR_DB_ID = `${PREFIX}public-subnet-for-db`;
-const PRIVATE_SUBNET_FOR_BASTION_ID = `${PREFIX}public-subnet-for-bastion`;
+// Subnet 名には自動で VPC_ID が付与されるのでここでは PREFIX は付けない
+const PUBLIC_SUBNET_FOR_ALB_ID = `public-subnet-for-alb`;
+const PRIVATE_SUBNET_FOR_APP_ID = `public-subnet-for-app`;
+const PRIVATE_SUBNET_FOR_DB_ID = `public-subnet-for-db`;
+const PRIVATE_SUBNET_FOR_BASTION_ID = `public-subnet-for-bastion`;
 const SG_FOR_ALB_ID = `${PREFIX}sg-for-alb`;
 const SG_FOR_APP_ID = `${PREFIX}sg-for-app`;
 const SG_FOR_DB_ID = `${PREFIX}sg-for-db`;
@@ -26,6 +27,7 @@ export class MyVpcTempalteStack extends cdk.Stack {
     const vpc = new ec2.Vpc(this, VPC_ID, {
       cidr: "10.0.0.0/16",
       natGateways: 0,
+      // 自動的に 2 つの AZ 上に構築される
       subnetConfiguration: [
         {
           cidrMask: 24,
@@ -52,25 +54,25 @@ export class MyVpcTempalteStack extends cdk.Stack {
 
     const sgForAlb = new ec2.SecurityGroup(this, SG_FOR_ALB_ID, {
       vpc: vpc,
-      securityGroupName:  PUBLIC_SUBNET_FOR_ALB_ID
+      securityGroupName:  SG_FOR_ALB_ID
     });
     sgForAlb.addIngressRule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(80));
 
     const sgForApp = new ec2.SecurityGroup(this, SG_FOR_APP_ID, {
       vpc: vpc,
-      securityGroupName:  PRIVATE_SUBNET_FOR_APP_ID
+      securityGroupName:  SG_FOR_APP_ID
     });
     sgForApp.addIngressRule(sgForAlb, ec2.Port.tcp(80));
 
     const sgForDb = new ec2.SecurityGroup(this, SG_FOR_DB_ID, {
       vpc: vpc,
-      securityGroupName:  PRIVATE_SUBNET_FOR_DB_ID
+      securityGroupName:  SG_FOR_DB_ID
     });
     sgForDb.addIngressRule(sgForApp, ec2.Port.tcp(3306));
 
     const sgForBastion = new ec2.SecurityGroup(this, SG_FOR_BASTION_ID, {
       vpc: vpc,
-      securityGroupName:  PRIVATE_SUBNET_FOR_BASTION_ID
+      securityGroupName:  SG_FOR_BASTION_ID
     });
     sgForBastion.addIngressRule(ec2.Peer.ipv4(MY_GLOBAL_IP), ec2.Port.tcp(22));
 
