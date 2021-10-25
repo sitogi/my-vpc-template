@@ -1,15 +1,13 @@
 import * as cdk from '@aws-cdk/core';
 import * as ec2 from "@aws-cdk/aws-ec2";
 
-const MY_GLOBAL_IP = '/0'
-
 const PREFIX = 'my-app-';
 const VPC_ID = `${PREFIX}vpc`;
 // Subnet 名には自動で VPC_ID が付与されるのでここでは PREFIX は付けない
 const PUBLIC_SUBNET_FOR_ALB_ID = `public-subnet-for-alb`;
-const PRIVATE_SUBNET_FOR_APP_ID = `public-subnet-for-app`;
-const PRIVATE_SUBNET_FOR_DB_ID = `public-subnet-for-db`;
-const PRIVATE_SUBNET_FOR_BASTION_ID = `public-subnet-for-bastion`;
+const PRIVATE_SUBNET_FOR_APP_ID = `private-subnet-for-app`;
+const PRIVATE_SUBNET_FOR_DB_ID = `private-subnet-for-db`;
+const PRIVATE_SUBNET_FOR_BASTION_ID = `private-subnet-for-bastion`;
 const SG_FOR_ALB_ID = `${PREFIX}sg-for-alb`;
 const SG_FOR_APP_ID = `${PREFIX}sg-for-app`;
 const SG_FOR_DB_ID = `${PREFIX}sg-for-db`;
@@ -70,11 +68,10 @@ export class MyVpcTempalteStack extends cdk.Stack {
     });
     sgForDb.addIngressRule(sgForApp, ec2.Port.tcp(3306));
 
-    const sgForBastion = new ec2.SecurityGroup(this, SG_FOR_BASTION_ID, {
+    new ec2.SecurityGroup(this, SG_FOR_BASTION_ID, {
       vpc: vpc,
       securityGroupName:  SG_FOR_BASTION_ID
     });
-    sgForBastion.addIngressRule(ec2.Peer.ipv4(MY_GLOBAL_IP), ec2.Port.tcp(22));
 
     return vpc;
   }
