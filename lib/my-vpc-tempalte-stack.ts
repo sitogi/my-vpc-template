@@ -7,7 +7,7 @@ const VPC_ID = `${PREFIX}vpc`;
 const PUBLIC_SUBNET_FOR_ALB_ID = `public-for-alb`;
 const PRIVATE_SUBNET_FOR_APP_ID = `private-for-app`;
 const PRIVATE_SUBNET_FOR_DB_ID = `private-for-db`;
-const PRIVATE_SUBNET_FOR_BASTION_ID = `private-for-bastion`;
+const PRIVATE_SUBNET_FOR_BASTION_ID = `private-subnet-for-bastion`;
 const SG_FOR_ALB_ID = `${PREFIX}sg-for-alb`;
 const SG_FOR_APP_ID = `${PREFIX}sg-for-app`;
 const SG_FOR_DB_ID = `${PREFIX}sg-for-db`;
@@ -27,6 +27,11 @@ export class MyVpcTempalteStack extends cdk.Stack {
       natGateways: 0,
       // 自動的に 2 つの AZ 上に構築される
       subnetConfiguration: [
+        {
+          cidrMask: 24,
+          name: PUBLIC_SUBNET_FOR_ALB_ID,
+          subnetType: ec2.SubnetType.PUBLIC,
+        },
         {
           cidrMask: 24,
           name: PRIVATE_SUBNET_FOR_APP_ID,
