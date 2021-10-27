@@ -131,7 +131,6 @@ export class MyVpcTempalteStack extends cdk.Stack {
       securityGroupName:  SG_FOR_BASTION_ID
     });
 
-    // TODO: Ingress 443 がついてた...？
     const sgForVpcEndpoints = new ec2.SecurityGroup(this, SG_FOR_EGRESS_ID, {
       vpc: vpc,
       securityGroupName:  SG_FOR_EGRESS_ID
