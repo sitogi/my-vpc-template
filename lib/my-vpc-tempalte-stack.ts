@@ -24,8 +24,8 @@ const VPC_ENDPOINT_ECR_DKR = `${PREFIX}vpc-endpoint-ecr-dkr`;
 const VPC_ENDPOINT_ECR_API = `${PREFIX}vpc-endpoint-ecr-api`;
 const VPC_ENDPOINT_SSM = `${PREFIX}vpc-endpoint-ssm`;
 const ALB_ID = `${PREFIX}alb`;
-const TARGET_GROUP_ID = `${PREFIX}-target-group`;
-const ALB_LISTENER_ID = `${PREFIX}-alb-listener`;
+const TARGET_GROUP_ID = `${PREFIX}target-group`;
+const ALB_LISTENER_ID = `${PREFIX}alb-listener`;
 
 export class MyVpcTempalteStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -189,5 +189,6 @@ export class MyVpcTempalteStack extends cdk.Stack {
       defaultTargetGroups: [targetGroup]
     });
   }
+
 }
 
