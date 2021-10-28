@@ -25,7 +25,9 @@ const VPC_ENDPOINT_ECR_API = `${PREFIX}vpc-endpoint-ecr-api`;
 const VPC_ENDPOINT_SSM = `${PREFIX}vpc-endpoint-ssm`;
 const ALB_ID = `${PREFIX}alb`;
 const TARGET_GROUP_ID = `${PREFIX}target-group`;
+const TARGET_GROUP_FOR_GREEN_ID = `${PREFIX}target-group-for-green`;
 const ALB_LISTENER_ID = `${PREFIX}alb-listener`;
+const ALB_LISTENER_FOR_GREEN_ID = `${PREFIX}alb-listener-for-green`;
 
 export class MyVpcTempalteStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -113,6 +115,9 @@ export class MyVpcTempalteStack extends cdk.Stack {
       securityGroupName:  SG_FOR_ALB_ID
     });
     sgForAlb.addIngressRule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(80));
+    // Blue/Green Deployment の確認用
+    // TODO: 実際には特定 IP or SG からのみ許可にする
+    sgForAlb.addIngressRule(ec2.Peer.ipv4("0.0.0.0/0"), ec2.Port.tcp(10080));
 
     const sgForApp = new ec2.SecurityGroup(this, SG_FOR_APP_ID, {
       vpc: vpc,
@@ -183,10 +188,25 @@ export class MyVpcTempalteStack extends cdk.Stack {
       port: 80,
     });
 
+    const targetGroupForGreen = new elb.ApplicationTargetGroup(this, TARGET_GROUP_FOR_GREEN_ID, {
+      targetGroupName: TARGET_GROUP_FOR_GREEN_ID,
+      vpc: vpc,
+      targetType: elb.TargetType.IP,
+      protocol: elb.ApplicationProtocol.HTTP,
+      port: 80,
+    });
+
     new elb.ApplicationListener(this, ALB_LISTENER_ID, {
       loadBalancer: alb,
       port: 80,
       defaultTargetGroups: [targetGroup]
+    });
+
+    new elb.ApplicationListener(this, ALB_LISTENER_FOR_GREEN_ID, {
+      loadBalancer: alb,
+      port: 10080,
+      protocol: elb.ApplicationProtocol.HTTP,
+      defaultTargetGroups: [targetGroupForGreen]
     });
   }
 
