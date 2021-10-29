@@ -141,21 +141,21 @@ export class MyVpcTempalteStack extends cdk.Stack {
     });
     sgForApp.addIngressRule(sgForAlb, ec2.Port.tcp(80));
 
+    const sgForBastion = new ec2.SecurityGroup(this, SG_FOR_BASTION_ID, {
+      vpc: vpc,
+      securityGroupName:  SG_FOR_BASTION_ID
+    });
+
     const sgForDb = new ec2.SecurityGroup(this, SG_FOR_DB_ID, {
       vpc: vpc,
       securityGroupName:  SG_FOR_DB_ID
     });
     sgForDb.addIngressRule(sgForApp, ec2.Port.tcp(3306));
-
-    new ec2.SecurityGroup(this, SG_FOR_BASTION_ID, {
-      vpc: vpc,
-      securityGroupName:  SG_FOR_BASTION_ID
-    });
+    sgForDb.addIngressRule(sgForBastion, ec2.Port.tcp(3306));
 
     vpc.addGatewayEndpoint(VPC_ENDPOINT_S3, {
       service: ec2.GatewayVpcEndpointAwsService.S3,
-      // TODO: bastion たてるときはここに追加が必要かも
-      subnets: [{ subnets: [appSubnet1, appSubnet2] }],
+      subnets: [{ subnets: [appSubnet1, appSubnet2, bastionSubnet1, bastionSubnet2] }],
     });
 
     const sgForVpcEndpoints = new ec2.SecurityGroup(this, SG_FOR_EGRESS_ID, {
@@ -165,6 +165,7 @@ export class MyVpcTempalteStack extends cdk.Stack {
 
     // make it possible pull docker images from ECR in app
     sgForApp.addIngressRule(sgForVpcEndpoints, ec2.Port.tcp(443));
+    sgForBastion.addIngressRule(sgForVpcEndpoints, ec2.Port.tcp(443));
 
     vpc.addInterfaceEndpoint(VPC_ENDPOINT_ECR_DKR, {
       service: ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
